@@ -2,7 +2,10 @@
 // board out.
 //
 // The board covers every slug in the snapshot's watchlist (the floor, never a ceiling) and every
-// other rankable pre-token protocol: the early rows the radar exists to find. A protocol is
+// other rankable pre-token protocol: the early rows the radar exists to find. Rankable means the
+// watchlist's own exclusion rule, applied board-wide: no exchange, no versioned pool, and no
+// wrapped, staked or bridged product of a token that already trades (WBTC and Binance staked ETH
+// are products, not launches). A protocol is
 // pre-token when its index entry records no token (no market cap, no CoinGecko id, no symbol);
 // the snapshot's live-token protocols are kept apart and shown as the market's own values, never
 // mixed into the ranked board. They do a second job: they calibrate the model.
@@ -224,9 +227,23 @@ export function isPreToken(p: SnapshotProtocol): boolean {
 /** DefiLlama's version-marker rule: a name ending in a release is a pool of another protocol. */
 const VERSIONED = /\s(V\d+(\.\d+)?|v\d+(\.\d+)?|\d+\.\d+)$/;
 
-/** Whether a protocol is one the board may rank: pre-token, not an exchange, not a versioned pool. */
+/** The watchlist's exclusion rule, applied to the whole board: a wrapped, staked or bridged product
+ * of a protocol whose token already trades is not a token that does not exist yet. WBTC is Bitcoin
+ * on Ethereum, Binance staked ETH is ETH in Binance's staking product, and neither is a protocol
+ * still waiting on a launch of its own. The categories the rule names are the house's own list. */
+const EXCLUDED_CATEGORIES = new Set(['CEX', 'Bridge', 'Canonical Bridge', 'Liquid Staking', 'Liquid Restaking', 'Restaked BTC']);
+const WRAPPED_OR_STAKED = /\bwrapped\b|\bstaked\b|\bstaking\b/i;
+const EXCHANGE_NAMES = ['Binance', 'Coinbase', 'Bybit', 'Kraken', 'Bitget', 'OKX', 'Bitfinex', 'Gemini'];
+
+/** Whether a protocol is one the board may rank: pre-token, not an exchange, not a versioned pool,
+ * and not a wrapped, staked or bridged product of a token that already trades. */
 export function isRankable(p: SnapshotProtocol): boolean {
-  return isPreToken(p) && p.category !== 'CEX' && !VERSIONED.test(p.name);
+  if (!isPreToken(p)) return false;
+  if (p.category !== null && EXCLUDED_CATEGORIES.has(p.category)) return false;
+  if (WRAPPED_OR_STAKED.test(p.name)) return false;
+  if (EXCHANGE_NAMES.some((e) => p.name.startsWith(e))) return false;
+  if (VERSIONED.test(p.name)) return false;
+  return true;
 }
 
 /** The snapshot's protocol by slug. */
