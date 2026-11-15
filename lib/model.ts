@@ -126,6 +126,7 @@ export interface BoardRow {
   gecko_id: string | null;
   symbol: string | null;
   token_status: 'pre-token';
+  watchlist: boolean;
   age_days: number | null;
   implied_value_usd: number;
   model: {
@@ -152,6 +153,7 @@ export interface RadarRow {
   listed_at: string | null;
   age_days: number | null;
   implied_value_usd: number;
+  watchlist: boolean;
   category_multiple: number;
   growth_multiplier: number;
   age_multiplier: number;
@@ -345,6 +347,7 @@ export function buildBoard(snapshot: Snapshot, model: ModelConstants = MODEL): B
     gecko_id: s.p.gecko_id,
     symbol: s.p.symbol,
     token_status: 'pre-token',
+    watchlist: snapshot.watchlist.includes(s.p.slug),
     age_days: s.age,
     implied_value_usd: s.implied,
     model: {
@@ -507,6 +510,7 @@ export function radarRow(row: BoardRow): RadarRow {
     listed_at: row.listed_at,
     age_days: row.age_days,
     implied_value_usd: row.implied_value_usd,
+    watchlist: row.watchlist,
     category_multiple: row.model.category_multiple,
     growth_multiplier: row.model.growth_multiplier,
     age_multiplier: row.model.age_multiplier,

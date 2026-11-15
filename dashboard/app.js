@@ -15,7 +15,7 @@
 
   var state = { q: '', category: 'all', chain: 'all', watchlist: false, tab: 'pre-token', sort: 'implied', dir: -1, selected: null, sandbox: null };
   var CAL = new Map(DATA.calibration.map(function (c) { return [c.category, c]; }));
-  var WATCH = new Set(DATA.rows.filter(function (r) { return r.tvl_usd >= DATA.floor_usd; }).map(function (r) { return r.slug; }));
+  var WATCH = new Set(DATA.rows.filter(function (r) { return r.watchlist; }).map(function (r) { return r.slug; }));
 
   var usdFull = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
   function fmtUsd(n) {
@@ -302,7 +302,7 @@
       el('div', { class: 'field' }, el('label', { for: 'category', text: 'Category' }), categorySelect),
       el('div', { class: 'field' }, el('label', { for: 'chain', text: 'Chain' }), chainSelect),
       el('div', { class: 'field' }, el('span', { class: 'lab', text: 'Scope' }),
-        el('label', { class: 'check', title: 'TVL at or above the watchlist floor' }, watchInput, 'Watchlist only')),
+        el('label', { class: 'check', title: 'The snapshot\u2019s named watchlist (' + DATA.watchlist_size + ' protocols)' }, watchInput, 'Watchlist only')),
       el('div', { class: 'field' }, el('span', { class: 'lab', text: 'Token status' }), el('div', { class: 'tabs' }, preBtn, liveBtn)),
       countEl,
       sandboxNoteEl
@@ -496,7 +496,7 @@
       el('h3', { text: 'Calibration — live comparables per category' }),
       calib,
       sandbox,
-      el('p', { class: 'footnote', text: 'The watchlist is a named list of ' + DATA.watchlist_size + ' slugs in the snapshot; the page cannot see the list itself, so \u201Cwatchlist only\u201D applies its floor (TVL ≥ ' + fmtUsd(DATA.floor_usd) + ').' })
+      el('p', { class: 'footnote', text: '\u201CWatchlist only\u201D shows exactly the snapshot\u2019s named watchlist of ' + DATA.watchlist_size + ' slugs; every one of them is on the board.' })
     );
     updateSandboxUI();
     return panel;
